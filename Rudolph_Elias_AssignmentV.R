@@ -195,3 +195,27 @@ venuesData2$latitude <- as.double(venuesData2$latitude)
 
 glimpse(venuesData2)
 
+
+# 5. Visualizing the extracted data
+
+# Set the extreme points for Germany.
+maxLongitude <- 15.043611
+minLongitude <- 5.866944
+maxLatitude <- 55.0846
+minLatitude <- 47.271679
+
+# Choose only the data which is only within the extreme points.
+geoData <-  filter(venuesData2, 
+                   latitude < maxLatitude & latitude > minLatitude & longitude < maxLongitude & longitude > minLongitude)
+
+# Plot the data for Germany.
+ggplot() +
+  geom_polygon(
+    aes(x = long, y = lat, group = group), data = map_data("world", region = "Germany"),
+    fill = "grey90",color = "black") +
+  theme_void() + coord_quickmap() + 
+  geom_point(data = geoData, aes(x = longitude, y = latitude), alpha = 0.3, colour= "darkblue") +
+  labs(title = "Event locations across Germany", caption = "Source: ticketmaster.com") +
+  geom_text(show.legend = FALSE) +
+  theme(title = element_text(size=8, face='bold'),
+        plot.caption = element_text(face = "italic"))
