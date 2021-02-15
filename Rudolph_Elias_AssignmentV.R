@@ -1,17 +1,20 @@
 rm(list = ls())
 
+# Install necessary packages 
 if (!require("jsonlite")) install.packages("jsonlite")
 if (!require("httr")) install.packages("httr")
 if (!require("rlist")) install.packages("rlist")
 if (!require("tidyverse")) install.packages("tidyverse")
 if (!require("naniar")) install.packages("naniar")
 
+# Load the packages
 library(jsonlite)
 library(httr)
 library(rlist)
 library(tidyverse)
 library(naniar)
 
+# Set the working directory
 setwd("C:/Users/Elias Rudolph/Documents/Studium/9. Semester/DSPM/Assignments/5/code/DSPM_Assignment_V")
 
 # 3. Interacting with the API - the basics
@@ -24,7 +27,7 @@ venues <- GET(url = "https://app.ticketmaster.com/discovery/v2/venues?",
               query= list(apikey = tm_key,
                           locale = "*",
                           countryCode = "DE"))
-# Extract the necessary data 
+# Convert the requested data 
 venues <- fromJSON(content(venues, as = "text")) 
 
 # Create the venuesData dataframe where the different information of the venues should be stored.
@@ -71,7 +74,7 @@ glimpse(venuesData)
 
 # Calculate the number of pages.
 n <- 12238
-n/500
+finalPage <- ceiling(n/500) 
 # So 25 iterations are needed in total.
 # 24 iterations will be included in the loop.
 # The last iteration will be done manually in order to avoid an error.
@@ -96,7 +99,7 @@ for (i in 1:pages) {
                                 size = "500",
                                 page = i-1,
                                 countryCode = "DE"))
-  # Note that we it is necessary to set page = i -1 because page counting starts with page 0.
+  # Note that it is necessary to set page = i -1, because page counting starts with page 0.
   
   venues_tep <- fromJSON(content(tep_data, as = "text"))
   datapath <- venues_tep[["_embedded"]][["venues"]]
@@ -149,7 +152,7 @@ tep_data <- GET(url = "https://app.ticketmaster.com/discovery/v2/venues?",
                 query= list(apikey = tm_key,
                             locale = "*",
                             size = "500",
-                            page = i,
+                            page = finalPage - 1,
                             countryCode = "DE"))
 
 venues_tep <- fromJSON(content(tep_data, as = "text"))
@@ -209,8 +212,7 @@ maxLatitude <- 55.0846
 minLatitude <- 47.271679
 
 # Choose only the data which is within the extreme points.
-geoData <-  filter(venuesData2, 
-                   latitude < maxLatitude & latitude > minLatitude & longitude < maxLongitude & longitude > minLongitude)
+geoData <-  filter(venuesData2, latitude < maxLatitude & latitude > minLatitude & longitude < maxLongitude & longitude > minLongitude)
 
 # Plot the data for Germany.
 ggplot() +
@@ -278,10 +280,13 @@ glimpse(venuesDataEs)
 
 # 6.4 Interacting with the API - advanced
 
+# There are 3066 venues listed for Spain when this assignment was solved.
+# Again, 500 entries per page are used.
 n <- 3066
-n/500
+finalPage <- ceiling(n/500)
 # So 7 iterations are needed. 
-# 6 of them through a loop, 1 iteration is needed to be proceeded manually. 
+# 6 of them through a loop, 1 iteration is needed to be proceeded manually.
+# To avoid an error
 pages <- floor(n/500)
 
 # Set up the empty dataframe with the according size.
@@ -355,7 +360,7 @@ tep_data <- GET(url = "https://app.ticketmaster.com/discovery/v2/venues?",
                 query= list(apikey = tm_key,
                             locale = "*",
                             size = "500",
-                            page = i,
+                            page = finalPage -1,
                             countryCode = "ES"))
 
 venues_tep <- fromJSON(content(tep_data, as = "text"))
@@ -406,7 +411,7 @@ venuesDataES2$latitude <- as.double(venuesDataES2$latitude)
 
 # 6.5 Visualizing the extracted data
 
-# Set the extreme points for Germany.
+# Set the extreme points for Spain.
 maxLongitude <- 3.316667
 minLongitude <- -9.3
 maxLatitude <- 43.783333
